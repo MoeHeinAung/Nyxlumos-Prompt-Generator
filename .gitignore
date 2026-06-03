@@ -1,0 +1,34 @@
+# [OS]
+.DS_Store
+Thumbs.db
+
+# [Editors]
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# [Python]
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class
+venv/
+.env
+*.db
+*.log
+
+# [Node/JS]
+node_modules/
+dist/
+dist-ssr/
+*.local
+.eslintcache
+
+# [Project Specific]
+.gitnexus/
+.claude/
+
+# [Planning Files]
+task_plan.md
+findings.md
+progress.md
