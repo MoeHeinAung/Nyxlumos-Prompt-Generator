@@ -1,7 +1,10 @@
 import asyncio
 import logging
+import os
 
 logger = logging.getLogger(__name__)
+
+CODE_EXECUTION_ENABLED = os.getenv("ENABLE_CODE_EXECUTION", "false").lower() in ("true", "1", "yes")
 
 
 class SandboxExecutor:
@@ -9,6 +12,8 @@ class SandboxExecutor:
     MAX_OUTPUT = 10000
 
     async def execute(self, code: str, language: str = "python") -> dict:
+        if not CODE_EXECUTION_ENABLED:
+            return {"success": False, "output": "", "errors": "Code execution is disabled. Set ENABLE_CODE_EXECUTION=true to enable (development only)."}
         if language not in ("python", "py"):
             return {"success": True, "output": f"Sandbox execution skipped for language: {language}", "errors": ""}
         try:
@@ -49,7 +54,7 @@ class SandboxExecutor:
         try:
             from app.config import get_deepseek_client, DEEPSEEK_CHAT_MODEL
             client = get_deepseek_client()
-            response = client.chat.completions.create(
+            response = await client.chat.completions.create(
                 model=DEEPSEEK_CHAT_MODEL,
                 temperature=0.2,
                 messages=[

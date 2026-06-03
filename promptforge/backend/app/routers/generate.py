@@ -78,6 +78,7 @@ async def generate_prompt(req: GenerateRequest, db: AsyncSession = Depends(get_d
     session.final_output = generation_result["final_prompt"]
     session.target_model = req.target_model
     session.selected_harnesses = req.enabled_harnesses
+    session.current_state = "S11_VALIDATE"
     await db.commit()
 
     await event_bus.publish("PromptGenerated", {
@@ -94,8 +95,11 @@ async def generate_prompt(req: GenerateRequest, db: AsyncSession = Depends(get_d
 
 def _extract_code(prompt: str) -> str:
     import re
-    for pattern in [r'```(?:python)?\s*\n(.*?)```', r'```(?:javascript|js)?\s*\n(.*?)```', r'```(?:typescript|ts)?\s*\n(.*?)```']:
-        match = re.search(pattern, prompt, re.DOTALL)
-        if match:
-            return match.group(1).strip()
+    match = re.search(r'```(\w+)?\s*\n(.*?)```', prompt, re.DOTALL)
+    if not match:
+        return ""
+    lang = (match.group(1) or "").lower()
+    code = match.group(2).strip()
+    if lang in ("python", "py", "javascript", "js", "typescript", "ts", "bash", "sh", "json", "yaml", "sql"):
+        return code
     return ""

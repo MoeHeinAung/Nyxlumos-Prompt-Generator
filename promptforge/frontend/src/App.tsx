@@ -12,6 +12,7 @@ import PromptOutput from "./components/workflow/PromptOutput";
 import AnalyticsDashboard from "./components/dashboard/AnalyticsDashboard";
 import SettingsModal from "./components/modals/SettingsModal";
 import ExportModal from "./components/modals/ExportModal";
+import type { HistoryItem, ModelInfo } from "./types";
 import { useSessionStore } from "./stores/sessionStore";
 import { api } from "./api/client";
 
@@ -20,8 +21,8 @@ const queryClient = new QueryClient();
 function AppContent() {
   const [view, setView] = useState("workflow");
   const [showExport, setShowExport] = useState(false);
-  const [history, setHistory] = useState<any[]>([]);
-  const [models, setModels] = useState<any[]>([]);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [models, setModels] = useState<ModelInfo[]>([]);
 
   const {
     sessionId, currentState, isLoading, error,

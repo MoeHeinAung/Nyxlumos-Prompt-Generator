@@ -22,10 +22,10 @@ def get_deepseek_client():
     global _deepseek_client
     if _deepseek_client is None:
         import logging
-        from openai import OpenAI
+        from openai import AsyncOpenAI
         if not DEEPSEEK_API_KEY:
             logging.getLogger(__name__).warning(
                 "DeepSeek API key not configured. Set DEEPSEEK_API_KEY environment variable."
             )
-        _deepseek_client = OpenAI(api_key=DEEPSEEK_API_KEY, base_url=DEEPSEEK_BASE_URL)
+        _deepseek_client = AsyncOpenAI(api_key=DEEPSEEK_API_KEY, base_url=DEEPSEEK_BASE_URL)
     return _deepseek_client

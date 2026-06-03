@@ -8,6 +8,7 @@ router = APIRouter(prefix="/history", tags=["history"])
 
 @router.get("")
 async def list_history(limit: int = 20, offset: int = 0, db: AsyncSession = Depends(get_db)):
+    limit = max(1, min(limit, 100))
     result = await db.execute(
         select(Prompt).order_by(Prompt.created_at.desc()).offset(offset).limit(limit)
     )
@@ -36,7 +37,7 @@ async def list_history(limit: int = 20, offset: int = 0, db: AsyncSession = Depe
     }
 
 
-@router.post("/{history_id}/delete")
+@router.delete("/{history_id}")
 async def delete_history(history_id: str, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Prompt).where(Prompt.id == history_id))
     prompt = result.scalar_one_or_none()

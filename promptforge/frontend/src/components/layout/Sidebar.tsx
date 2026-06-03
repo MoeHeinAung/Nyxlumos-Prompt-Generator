@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Sparkles, Clock, BarChart3, Database, Settings, Plus, Layers } from "lucide-react";
+import { Clock, BarChart3, Database, Settings, Plus, Layers } from "lucide-react";
 import NeonText from "../hud/NeonText";
 
 interface Props {

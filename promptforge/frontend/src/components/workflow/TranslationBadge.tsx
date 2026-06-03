@@ -1,7 +1,7 @@
 import { useSessionStore } from "../../stores/sessionStore";
 
 export default function TranslationBadge() {
-  const { detectedLanguage, translatedInput, originalInput } = useSessionStore();
+  const { detectedLanguage, translatedInput } = useSessionStore();
 
   if (detectedLanguage !== "my" || !translatedInput) return null;
 

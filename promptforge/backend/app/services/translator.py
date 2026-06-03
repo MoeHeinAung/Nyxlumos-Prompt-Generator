@@ -1,6 +1,6 @@
 import logging
 from typing import Optional
-from openai import OpenAI
+from openai import AsyncOpenAI
 from app.config import get_deepseek_client, DEEPSEEK_CHAT_MODEL
 from app.database import async_session_factory, BurmeseGlossary
 from app.utils.burmese_utils import contains_burmese, sanitize_burmese
@@ -10,8 +10,13 @@ logger = logging.getLogger(__name__)
 
 
 class TranslatorService:
-    def __init__(self, client: Optional[OpenAI] = None):
-        self.client = client or get_deepseek_client()
+    def __init__(self, client: Optional[AsyncOpenAI] = None):
+        self._client = client
+
+    def _get_client(self):
+        if self._client is None:
+            self._client = get_deepseek_client()
+        return self._client
 
     async def translate(self, text: str, source_lang: str = "auto", target_lang: str = "en") -> dict:
         warnings: list[str] = []
@@ -41,7 +46,7 @@ class TranslatorService:
                 "You are a precise Burmese-to-English translator. "
                 "Preserve technical terms. Output ONLY the translation, no explanations."
             )
-            response = self.client.chat.completions.create(
+            response = await self._get_client().chat.completions.create(
                 model=DEEPSEEK_CHAT_MODEL,
                 temperature=0.1,
                 messages=[

@@ -34,7 +34,7 @@ class CreateSessionRequest(BaseModel):
 
 
 class AdvanceSessionRequest(BaseModel):
-    user_input: Any = None
+    user_input: Optional[dict] = None
 
 
 class SessionResponse(BaseModel):

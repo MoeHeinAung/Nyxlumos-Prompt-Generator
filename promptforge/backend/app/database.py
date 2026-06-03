@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime, timedelta, timezone
-from sqlalchemy import Column, String, Integer, Float, Text, JSON, DateTime, ForeignKey, create_engine, select
+from sqlalchemy import Column, String, Integer, Float, Text, JSON, DateTime, ForeignKey, Index, create_engine, select
+from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import DeclarativeBase, relationship, sessionmaker
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from app.config import DATABASE_URL
@@ -17,16 +18,20 @@ class Session(Base):
     original_input = Column(Text)
     translated_input = Column(Text)
     detected_language = Column(String)
-    extracted_intent = Column(JSON)
-    classification = Column(JSON)
+    extracted_intent = Column(MutableDict.as_mutable(JSON))
+    classification = Column(MutableDict.as_mutable(JSON))
     target_model = Column(String)
-    selected_harnesses = Column(JSON, default=list)
-    answers = Column(JSON, default=dict)
-    pending_questions = Column(JSON, default=list)
+    selected_harnesses = Column(MutableList.as_mutable(JSON), default=list)
+    answers = Column(MutableDict.as_mutable(JSON), default=dict)
+    pending_questions = Column(MutableList.as_mutable(JSON), default=list)
     generated_prompt = Column(Text)
     final_output = Column(Text)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_sessions_created_at", "created_at"),
+    )
 
     state_data_rel = relationship("SessionState", back_populates="session", uselist=False, cascade="all, delete-orphan")
 
@@ -34,7 +39,7 @@ class Session(Base):
 class SessionState(Base):
     __tablename__ = "session_state"
     session_id = Column(String, ForeignKey("sessions.id"), primary_key=True)
-    state_data = Column(JSON, nullable=False, default=dict)
+    state_data = Column(MutableDict.as_mutable(JSON), nullable=False, default=dict)
     expires_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc) + timedelta(minutes=30))
 
     session = relationship("Session", back_populates="state_data_rel")
@@ -52,6 +57,11 @@ class Prompt(Base):
     complexity_score = Column(Integer)
     scope = Column(String)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_prompts_created_at", "created_at"),
+        Index("ix_prompts_target_model", "target_model"),
+    )
 
 
 class ModelTemplate(Base):

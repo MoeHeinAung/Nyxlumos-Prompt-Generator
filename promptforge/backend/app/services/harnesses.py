@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -96,6 +97,8 @@ class CodeExecutionHarness(BaseHarness):
         )
 
     async def validate(self, code: str, language: str = "python") -> dict:
+        if not os.getenv("ENABLE_CODE_EXECUTION", "false").lower() in ("true", "1", "yes"):
+            return {"success": True, "output": "Code execution disabled by config.", "errors": ""}
         if language not in ("python", "py"):
             return {"success": True, "output": "Non-Python code skipped validation.", "errors": ""}
         try:
@@ -126,7 +129,7 @@ class DebateHarness(BaseHarness):
         try:
             from app.config import get_deepseek_client, DEEPSEEK_CHAT_MODEL
             client = get_deepseek_client()
-            architect = client.chat.completions.create(
+            architect = await client.chat.completions.create(
                 model=DEEPSEEK_CHAT_MODEL,
                 temperature=0.3,
                 messages=[
@@ -135,7 +138,7 @@ class DebateHarness(BaseHarness):
                 ],
             )
             arch_text = architect.choices[0].message.content
-            critic = client.chat.completions.create(
+            critic = await client.chat.completions.create(
                 model=DEEPSEEK_CHAT_MODEL,
                 temperature=0.3,
                 messages=[
@@ -144,7 +147,7 @@ class DebateHarness(BaseHarness):
                 ],
             )
             crit_text = critic.choices[0].message.content
-            refiner = client.chat.completions.create(
+            refiner = await client.chat.completions.create(
                 model=DEEPSEEK_CHAT_MODEL,
                 temperature=0.3,
                 messages=[
@@ -153,7 +156,7 @@ class DebateHarness(BaseHarness):
                 ],
             )
             ref_text = refiner.choices[0].message.content
-            judge = client.chat.completions.create(
+            judge = await client.chat.completions.create(
                 model=DEEPSEEK_CHAT_MODEL,
                 temperature=0.2,
                 messages=[

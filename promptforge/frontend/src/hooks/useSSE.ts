@@ -1,6 +1,6 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef } from "react";
 
-export function useSSE(url: string | null, onMessage: (data: any) => void) {
+export function useSSE(url: string | null, onMessage: (data: unknown) => void) {
   const eventSourceRef = useRef<EventSource | null>(null);
 
   useEffect(() => {

@@ -19,6 +19,10 @@ async def lifespan(app: FastAPI):
     logger.info("PromptForge backend started.")
     yield
     event_task.cancel()
+    try:
+        await event_task
+    except asyncio.CancelledError:
+        pass
     logger.info("PromptForge backend shutting down.")
 
 

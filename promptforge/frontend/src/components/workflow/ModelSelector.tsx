@@ -7,7 +7,7 @@ import { useSessionStore } from "../../stores/sessionStore";
 import { api } from "../../api/client";
 import type { ModelInfo } from "../../types";
 
-const MODEL_ICONS: Record<string, any> = {
+const MODEL_ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
   deepseek: Cpu,
   openai: Globe,
   anthropic: Shield,

@@ -48,6 +48,12 @@ async def get_session(session_id: str, db: AsyncSession = Depends(get_db)):
     session = result.scalar_one_or_none()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
+
+    state_result = await db.execute(select(SessionState).where(SessionState.session_id == session_id))
+    state = state_result.scalar_one_or_none()
+    if state and state.expires_at and state.expires_at < datetime.now(timezone.utc):
+        raise HTTPException(status_code=410, detail="Session expired")
+
     next_action = _get_next_action(session.current_state, session)
     return SessionResponse(
         session_id=session.id,
@@ -77,20 +83,28 @@ async def advance_session(session_id: str, req: AdvanceSessionRequest, db: Async
 
     state_result = await db.execute(select(SessionState).where(SessionState.session_id == session_id))
     state = state_result.scalar_one_or_none()
+    if state and state.expires_at and state.expires_at < datetime.now(timezone.utc):
+        raise HTTPException(status_code=410, detail="Session expired")
 
     current = session.current_state
     next_state = PromptForgeFSM.next_state(current, _session_to_dict(session))
 
     if current == "S1_INGEST":
+        if req.user_input and isinstance(req.user_input, dict):
+            session.translated_input = req.user_input.get("translated_text", session.translated_input)
         next_state = "S2_TRANSLATE"
     elif current == "S2_TRANSLATE":
         if req.user_input and isinstance(req.user_input, dict):
-            session.translated_input = req.user_input.get("translated_text", session.translated_input)
+            session.translated_input = req.user_input.get("translated_text") or session.translated_input
+            session.extracted_intent = req.user_input.get("intent") or session.extracted_intent
+            session.classification = req.user_input.get("classification") or session.classification
         next_state = "S3_EXTRACT"
     elif current == "S3_EXTRACT":
         if req.user_input and isinstance(req.user_input, dict):
-            session.extracted_intent = req.user_input.get("intent")
-            session.classification = req.user_input.get("classification")
+            if req.user_input.get("intent"):
+                session.extracted_intent = req.user_input.get("intent")
+            if req.user_input.get("classification"):
+                session.classification = req.user_input.get("classification")
         next_state = PromptForgeFSM.next_state("S3_EXTRACT", {})
     elif current == "S4_GAP_ANALYSIS":
         missing = []

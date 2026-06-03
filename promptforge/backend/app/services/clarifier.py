@@ -1,15 +1,20 @@
 import json
 import logging
 from typing import Optional
-from openai import OpenAI
+from openai import AsyncOpenAI
 from app.config import get_deepseek_client, DEEPSEEK_CHAT_MODEL
 
 logger = logging.getLogger(__name__)
 
 
 class ClarifierService:
-    def __init__(self, client: Optional[OpenAI] = None):
-        self.client = client or get_deepseek_client()
+    def __init__(self, client: Optional[AsyncOpenAI] = None):
+        self._client = client
+
+    def _get_client(self):
+        if self._client is None:
+            self._client = get_deepseek_client()
+        return self._client
 
     async def generate_questions(self, intent: dict, missing_info: list) -> list[dict]:
         if not missing_info:
@@ -17,7 +22,7 @@ class ClarifierService:
         questions = []
         for field in missing_info[:5]:
             try:
-                response = self.client.chat.completions.create(
+                response = await self._get_client().chat.completions.create(
                     model=DEEPSEEK_CHAT_MODEL,
                     temperature=0.7,
                     messages=[

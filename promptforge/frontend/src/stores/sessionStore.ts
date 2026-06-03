@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { SessionState, Intent, Classification, Question, ValidationResult } from "../types";
+import type { SessionState } from "../types";
 import { api } from "../api/client";
 
 interface SessionActions {
@@ -72,8 +72,8 @@ export const useSessionStore = create<SessionState & SessionActions>((set, get) 
       }
 
       set({ isLoading: false });
-    } catch (e: any) {
-      set({ isLoading: false, error: e.message });
+    } catch (e: unknown) {
+      set({ isLoading: false, error: (e as Error).message || "Unknown error" });
     }
   },
 
@@ -84,8 +84,8 @@ export const useSessionStore = create<SessionState & SessionActions>((set, get) 
     set({ answers: newAnswers });
     try {
       await api.advanceSession(sessionId, newAnswers);
-    } catch (e: any) {
-      set({ error: e.message });
+    } catch (e: unknown) {
+      set({ error: (e as Error).message || "Unknown error" });
     }
   },
 
@@ -109,8 +109,8 @@ export const useSessionStore = create<SessionState & SessionActions>((set, get) 
       try {
         await api.advanceSession(sessionId, { model });
         set({ currentState: "S8_HARNESS_SELECT" });
-      } catch (e: any) {
-        set({ error: e.message });
+      } catch (e: unknown) {
+        set({ error: (e as Error).message || "Unknown error" });
       }
     }
   },
@@ -138,8 +138,8 @@ export const useSessionStore = create<SessionState & SessionActions>((set, get) 
         currentState: "S11_VALIDATE",
         isLoading: false,
       });
-    } catch (e: any) {
-      set({ isLoading: false, error: e.message });
+    } catch (e: unknown) {
+      set({ isLoading: false, error: (e as Error).message || "Unknown error" });
     }
   },
 

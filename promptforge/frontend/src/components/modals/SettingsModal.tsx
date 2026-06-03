@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { X, Key, Server, Check } from "lucide-react";
 import HUDButton from "../hud/HUDButton";
@@ -9,16 +9,9 @@ interface Props {
 }
 
 export default function SettingsModal({ onClose }: Props) {
-  const [apiKey, setApiKey] = useState("");
-  const [ollamaUrl, setOllamaUrl] = useState("http://localhost:11434");
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem("pf_deepseek_key") || "");
+  const [ollamaUrl, setOllamaUrl] = useState(() => localStorage.getItem("pf_ollama_url") || "http://localhost:11434");
   const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    const savedKey = localStorage.getItem("pf_deepseek_key");
-    const savedUrl = localStorage.getItem("pf_ollama_url");
-    if (savedKey) setApiKey(savedKey);
-    if (savedUrl) setOllamaUrl(savedUrl);
-  }, []);
 
   const handleSave = () => {
     if (apiKey.trim()) localStorage.setItem("pf_deepseek_key", apiKey.trim());
@@ -42,6 +35,12 @@ export default function SettingsModal({ onClose }: Props) {
         className="bg-void-light border border-cyan/20 rounded-xl p-6 w-full max-w-md shadow-[0_0_60px_rgba(0,240,255,0.08)]"
         onClick={(e) => e.stopPropagation()}
       >
+        <div className="mb-4 p-3 rounded-lg border border-amber/20 bg-amber/[0.03]">
+          <p className="text-[10px] font-jetbrains text-amber/50 leading-relaxed">
+            Note: Settings are stored locally. API keys must be configured on the backend server via environment variables.
+          </p>
+        </div>
+
         <div className="flex items-center justify-between mb-5">
           <NeonText as="h3" className="text-sm tracking-[0.15em]">SETTINGS</NeonText>
           <button onClick={onClose} className="p-1 rounded-lg text-white/30 hover:text-white hover:bg-white/[0.04] transition-all">

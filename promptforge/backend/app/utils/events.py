@@ -1,5 +1,8 @@
 import asyncio
+import logging
 from typing import Callable
+
+logger = logging.getLogger(__name__)
 
 
 class EventBus:
@@ -17,7 +20,10 @@ class EventBus:
         while True:
             event = await self._queue.get()
             for handler in self._subscribers.get(event["event"], []):
-                await handler(event["payload"])
+                try:
+                    await handler(event["payload"])
+                except Exception:
+                    logger.exception("Event handler failed for event %s", event["event"])
 
 
 event_bus = EventBus()

@@ -1,6 +1,6 @@
 import logging
 from typing import Optional
-from openai import OpenAI
+from openai import AsyncOpenAI
 from app.config import get_deepseek_client, DEEPSEEK_CHAT_MODEL, DEEPSEEK_REASONER_MODEL
 from app.database import async_session_factory, ModelTemplate
 from sqlalchemy import select
@@ -9,8 +9,13 @@ logger = logging.getLogger(__name__)
 
 
 class PromptOptimizer:
-    def __init__(self, client: Optional[OpenAI] = None):
-        self.client = client or get_deepseek_client()
+    def __init__(self, client: Optional[AsyncOpenAI] = None):
+        self._client = client
+
+    def _get_client(self):
+        if self._client is None:
+            self._client = get_deepseek_client()
+        return self._client
 
     async def get_model_template(self, model_name: str) -> Optional[dict]:
         async with async_session_factory() as db:
@@ -80,7 +85,7 @@ class PromptOptimizer:
 
         model = DEEPSEEK_REASONER_MODEL if use_reasoner else DEEPSEEK_CHAT_MODEL
         try:
-            response = self.client.chat.completions.create(
+            response = await self._get_client().chat.completions.create(
                 model=model,
                 temperature=0.3,
                 messages=[

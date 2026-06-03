@@ -31,7 +31,7 @@ export default function PromptOutput() {
     URL.revokeObjectURL(url);
   };
 
-  const tabs: { id: Tab; label: string; icon: any }[] = [
+  const tabs: { id: Tab; label: string; icon: React.ComponentType<{ size?: number }> }[] = [
     { id: "prompt", label: "Final Prompt", icon: FileText },
     { id: "trace", label: "Reasoning Trace", icon: GitBranch },
     { id: "validation", label: "Validation", icon: Terminal },

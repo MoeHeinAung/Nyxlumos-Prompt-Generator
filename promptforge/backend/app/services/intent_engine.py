@@ -1,7 +1,7 @@
 import json
 import logging
 from typing import Optional
-from openai import OpenAI
+from openai import AsyncOpenAI
 from app.config import get_deepseek_client, DEEPSEEK_CHAT_MODEL
 from app.utils.events import event_bus
 
@@ -9,8 +9,13 @@ logger = logging.getLogger(__name__)
 
 
 class IntentEngine:
-    def __init__(self, client: Optional[OpenAI] = None):
-        self.client = client or get_deepseek_client()
+    def __init__(self, client: Optional[AsyncOpenAI] = None):
+        self._client = client
+
+    def _get_client(self):
+        if self._client is None:
+            self._client = get_deepseek_client()
+        return self._client
 
     async def extract(self, translated_text: str) -> dict:
         system_prompt = (
@@ -21,7 +26,7 @@ class IntentEngine:
             "scope (string), output_type (string)."
         )
         try:
-            response = self.client.chat.completions.create(
+            response = await self._get_client().chat.completions.create(
                 model=DEEPSEEK_CHAT_MODEL,
                 temperature=0.2,
                 messages=[

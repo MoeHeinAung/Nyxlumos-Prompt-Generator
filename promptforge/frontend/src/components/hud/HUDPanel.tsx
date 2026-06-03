@@ -11,7 +11,7 @@ interface Props {
 export default function HUDPanel({ children, className = "", animate = true, cornerBrackets = false, glow }: Props) {
   const Comp = animate ? motion.div : "div";
   const animProps = animate
-    ? { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.4, ease: "easeOut" } }
+    ? { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.4, ease: "easeOut" as const } }
     : {};
 
   return (

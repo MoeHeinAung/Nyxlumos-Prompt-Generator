@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { PieLabelRenderProps } from "recharts";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, PieChart, Pie, Cell,
@@ -22,10 +23,10 @@ const tooltipStyle = {
 };
 
 export default function AnalyticsDashboard() {
-  const [sessions, setSessions] = useState<any[]>([]);
-  const [models, setModels] = useState<any[]>([]);
-  const [harnesses, setHarnesses] = useState<any[]>([]);
-  const [complexity, setComplexity] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<{ date: string; count: number }[]>([]);
+  const [models, setModels] = useState<{ model: string; count: number }[]>([]);
+  const [harnesses, setHarnesses] = useState<{ harness: string; enabled_count: number; pass_rate: number }[]>([]);
+  const [complexity, setComplexity] = useState<{ score: number; count: number }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -110,7 +111,7 @@ export default function AnalyticsDashboard() {
                 cy="50%"
                 outerRadius={85}
                 innerRadius={40}
-                label={({ harness }: any) => harness?.split("_")[0] || ""}
+                label={(props: PieLabelRenderProps) => String(props.name || "").split("_")[0]}
                 labelLine={false}
               >
                 {harnesses.map((_, i) => (
